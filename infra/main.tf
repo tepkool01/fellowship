@@ -45,6 +45,9 @@ module "eks" {
       instance_types  = ["t3.small"]
     }
   }
+  cluster_encryption_config = {
+    provider_key_alias = "alias/eks/fellowship-cluster-alt"
+  }
 }
 
 resource "aws_cloudwatch_log_group" "eks" {
