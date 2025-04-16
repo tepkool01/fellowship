@@ -8,7 +8,28 @@ module "vpc" {
   name_prefix = var.name_prefix
 }
 
+resource "aws_subnet" "public" {
+  count                   = 2
+  vpc_id                  = module.vpc.id
+  cidr_block              = cidrsubnet("10.0.0.0/16", 8, count.index)
+  map_public_ip_on_launch = true
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name = "${var.name_prefix}-subnet-${count.index}"
+  }
+}
+
+data "aws_availability_zones" "available" {}
+
 module "ecr" {
   source    = "./modules/ecr"
   repo_name = var.name_prefix
+}
+
+module "eks" {
+  source       = "./modules/eks"
+  cluster_name = "${var.name_prefix}-cluster"
+  subnets      = aws_subnet.public[*].id
+  vpc_id       = module.vpc.id
 }

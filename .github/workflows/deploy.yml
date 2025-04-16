@@ -1,11 +1,11 @@
-name: Build & Deploy
+name: Provision & Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [master]
 
 jobs:
-  build-deploy:
+  provision-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,6 +17,17 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      working-directory: ./infra
+      run: terraform init
+
+    - name: Terraform Apply
+      working-directory: ./infra
+      run: terraform apply -auto-approve
 
     - name: Login to Amazon ECR
       run: |
@@ -36,5 +47,7 @@ jobs:
         AWS_REGION: ${{ secrets.AWS_REGION }}
         ECR_REPO_NAME: ${{ secrets.ECR_REPO_NAME }}
       run: |
-        aws eks update-kubeconfig --name fellowship-cluster
+        aws eks update-kubeconfig --name fellowship-cluster --region ${{ secrets.AWS_REGION }}
         envsubst < k8s/deployment.yaml | kubectl apply -f -
+        kubectl apply -f k8s/service.yaml
+        kubectl apply -f k8s/ingress.yaml
