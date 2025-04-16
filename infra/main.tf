@@ -29,6 +29,7 @@ module "ecr" {
 
 
 module "eks" {
+  create_cloudwatch_log_group = false
   source          = "terraform-aws-modules/eks/aws"
   version         = "~> 20.31"
   cluster_name    = "${var.name_prefix}-cluster"
@@ -43,5 +44,16 @@ module "eks" {
       min_size        = 1
       instance_types  = ["t3.small"]
     }
+  }
+}
+
+resource "aws_cloudwatch_log_group" "eks" {
+  depends_on = [module.eks]
+  name              = "/aws/eks/${var.name_prefix}-cluster/cluster"
+  retention_in_days = 7
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = all
   }
 }
