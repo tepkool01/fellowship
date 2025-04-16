@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fellowship-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: fellowship
+  ports:
+    - port: 80
+      targetPort: 80

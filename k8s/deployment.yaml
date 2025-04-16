@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fellowship
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fellowship
+  template:
+    metadata:
+      labels:
+        app: fellowship
+    spec:
+      containers:
+      - name: fellowship
+        image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:latest
+        ports:
+        - containerPort: 80
