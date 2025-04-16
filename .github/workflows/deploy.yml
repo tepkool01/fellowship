@@ -2,7 +2,7 @@ name: Provision & Deploy
 
 on:
   push:
-    branches: [master]
+    branches: [main]
 
 jobs:
   provision-deploy:
