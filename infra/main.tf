@@ -4,6 +4,13 @@ provider "aws" {
 
 data "aws_availability_zones" "available" {}
 
+locals {
+  cluster_encryption_config = {
+    provider_key_alias = "alias/eks/fellowship-cluster-alt"
+    resources          = ["secrets"]
+  }
+}
+
 module "vpc" {
   source      = "./modules/vpc"
   vpc_cidr    = "10.0.0.0/16"
@@ -45,12 +52,7 @@ module "eks" {
       instance_types  = ["t3.small"]
     }
   }
-  cluster_encryption_config = [
-    {
-      provider_key_alias = "alias/eks/fellowship-cluster-alt"
-      resources          = ["secrets"]
-    }
-  ]
+  cluster_encryption_config = [local.cluster_encryption_config]
 }
 
 resource "aws_cloudwatch_log_group" "eks" {
