@@ -46,11 +46,11 @@ module "eks" {
     }
   }
   cluster_encryption_config = [
-  {
-    provider_key_alias = "alias/eks/fellowship-cluster-alt"
-    resources          = ["secrets"]
-  }
-]
+    {
+      provider_key_alias = "alias/eks/fellowship-cluster-alt"
+      resources          = ["secrets"]
+    }
+  ]
 }
 
 resource "aws_cloudwatch_log_group" "eks" {
