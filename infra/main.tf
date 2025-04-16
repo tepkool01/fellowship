@@ -12,7 +12,7 @@ module "vpc" {
 
 resource "aws_subnet" "public" {
   count                   = 2
-  vpc_id                  = module.vpc.id
+  vpc_id                  = module.vpc.vpc_id
   cidr_block              = cidrsubnet("10.0.0.0/16", 8, count.index)
   map_public_ip_on_launch = true
   availability_zone       = data.aws_availability_zones.available.names[count.index]
@@ -27,13 +27,14 @@ module "ecr" {
   repo_name = var.name_prefix
 }
 
+
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
   version         = "~> 20.31"
   cluster_name    = "${var.name_prefix}-cluster"
   cluster_version = "1.31"
   subnet_ids      = aws_subnet.public[*].id
-  vpc_id          = module.vpc.id
+  vpc_id          = module.vpc.vpc_id
 
   eks_managed_node_groups = {
     default = {
