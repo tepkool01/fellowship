@@ -2,6 +2,8 @@ provider "aws" {
   region = var.aws_region
 }
 
+data "aws_availability_zones" "available" {}
+
 module "vpc" {
   source      = "./modules/vpc"
   vpc_cidr    = "10.0.0.0/16"
@@ -20,16 +22,24 @@ resource "aws_subnet" "public" {
   }
 }
 
-data "aws_availability_zones" "available" {}
-
 module "ecr" {
   source    = "./modules/ecr"
   repo_name = var.name_prefix
 }
 
 module "eks" {
-  source       = "./modules/eks"
-  cluster_name = "${var.name_prefix}-cluster"
-  subnets      = aws_subnet.public[*].id
-  vpc_id       = module.vpc.id
+  source          = "terraform-aws-modules/eks/aws"
+  cluster_name    = "${var.name_prefix}-cluster"
+  cluster_version = "1.28"
+  subnets         = aws_subnet.public[*].id
+  vpc_id          = module.vpc.id
+
+  node_groups = {
+    default = {
+      desired_capacity = 2
+      max_capacity     = 3
+      min_capacity     = 1
+      instance_types   = ["t3.small"]
+    }
+  }
 }

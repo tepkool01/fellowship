@@ -46,8 +46,10 @@ jobs:
         AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
         ECR_REPO_NAME: ${{ secrets.ECR_REPO_NAME }}
+        CERT_ARN: ${{ secrets.CERT_ARN }}
       run: |
         aws eks update-kubeconfig --name fellowship-cluster --region ${{ secrets.AWS_REGION }}
         envsubst < k8s/deployment.yaml | kubectl apply -f -
         kubectl apply -f k8s/service.yaml
-        kubectl apply -f k8s/ingress.yaml
+        kubectl apply -f k8s/hpa.yaml
+        envsubst < k8s/ingress.yaml | kubectl apply -f -
