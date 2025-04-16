@@ -1,7 +1,8 @@
 module "eks" {
+  version = "~> 20.31"
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = "${var.name_prefix}-cluster"
-  cluster_version = "1.28"
+  cluster_version = "1.31"
   subnet_ids      = aws_subnet.public[*].id
   vpc_id          = module.vpc.id
 
