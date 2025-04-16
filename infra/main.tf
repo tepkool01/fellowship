@@ -34,6 +34,16 @@ module "ecr" {
   repo_name = var.name_prefix
 }
 
+resource "aws_kms_key" "eks" {
+  description             = "KMS key for EKS secrets encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+}
+
+resource "aws_kms_alias" "eks" {
+  name          = "alias/eks/fellowship-cluster-alt"
+  target_key_id = aws_kms_key.eks.key_id
+}
 
 module "eks" {
   create_cloudwatch_log_group = false
@@ -52,7 +62,12 @@ module "eks" {
       instance_types  = ["t3.small"]
     }
   }
-  cluster_encryption_config = [local.cluster_encryption_config]
+  cluster_encryption_config = {
+    resources = ["secrets"]
+    provider = {
+      key_arn = aws_kms_key.eks.arn
+    }
+  }
 }
 
 resource "aws_cloudwatch_log_group" "eks" {
