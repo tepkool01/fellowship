@@ -29,17 +29,18 @@ module "ecr" {
 
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
+  version         = "~> 20.31"
   cluster_name    = "${var.name_prefix}-cluster"
-  cluster_version = "1.28"
-  subnets         = aws_subnet.public[*].id
+  cluster_version = "1.31"
+  subnet_ids      = aws_subnet.public[*].id
   vpc_id          = module.vpc.id
 
-  node_groups = {
+  eks_managed_node_groups = {
     default = {
-      desired_capacity = 2
-      max_capacity     = 3
-      min_capacity     = 1
-      instance_types   = ["t3.small"]
+      desired_size    = 2
+      max_size        = 3
+      min_size        = 1
+      instance_types  = ["t3.small"]
     }
   }
 }
