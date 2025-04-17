@@ -43,8 +43,12 @@ resource "aws_kms_key" "eks" {
 }
 
 resource "aws_kms_alias" "eks" {
-  name          = "alias/eks/fellowship-cluster-alt"
+  name          = "alias/eks/fellowship-cluster-final"
   target_key_id = aws_kms_key.eks.key_id
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 module "eks" {
