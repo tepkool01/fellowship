@@ -1,6 +1,15 @@
 provider "aws" {
   region = var.aws_region
 }
+terraform {
+  backend "s3" {
+    bucket         = "my-fellowship-terraform-state"
+    key            = "infra/terraform.tfstate"
+    region         = "us-west-2"
+    dynamodb_table = "fellowship-terraform-locks"
+    encrypt        = true
+  }
+}
 
 data "aws_availability_zones" "available" {}
 
