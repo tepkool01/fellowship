@@ -83,13 +83,13 @@ module "eks_auth" {
     }
   ]
 
-  aws_auth_roles = [
-    for role_arn in module.eks.eks_managed_node_group_iam_role_arns : {
-      rolearn  = role_arn
-      username = "system:node:{{EC2PrivateDNSName}}"
-      groups   = ["system:bootstrappers", "system:nodes"]
-    }
-  ]
+#   aws_auth_roles = [
+#     for role_arn in module.eks.eks_managed_node_group_iam_role_arns : {
+#       rolearn  = role_arn
+#       username = "system:node:{{EC2PrivateDNSName}}"
+#       groups   = ["system:bootstrappers", "system:nodes"]
+#     }
+#   ]
 }
 
 resource "aws_cloudwatch_log_group" "eks" {
@@ -103,6 +103,6 @@ resource "aws_cloudwatch_log_group" "eks" {
   }
 }
 
-output "eks_node_role_arns" {
-  value = module.eks.eks_managed_node_group_iam_role_arns
-}
+# output "eks_node_role_arns" {
+#   value = module.eks.eks_managed_node_group_iam_role_arns
+# }
