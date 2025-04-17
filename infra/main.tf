@@ -6,8 +6,10 @@ data "aws_availability_zones" "available" {}
 
 locals {
   cluster_encryption_config = {
-    provider_key_alias = "alias/eks/fellowship-cluster-alt"
-    resources          = ["secrets"]
+    resources = ["secrets"]
+    provider = {
+      key_arn = aws_kms_key.eks.arn
+    }
   }
 }
 
@@ -60,22 +62,18 @@ module "eks" {
       max_size        = 3
       min_size        = 1
       instance_types  = ["t3.small"]
+      ami_type        = "AL2_x86_64"
     }
   }
-  cluster_encryption_config = {
-    resources = ["secrets"]
-    provider = {
-      key_arn = aws_kms_key.eks.arn
-    }
-  }
+
+  cluster_encryption_config = local.cluster_encryption_config
 }
 
 module "eks_auth" {
   source  = "terraform-aws-modules/eks/aws//modules/aws-auth"
   version = "~> 20.31"
 
-  cluster_name = module.eks.cluster_name
-  create_aws_auth_configmap = true
+  manage_aws_auth_configmap = true
 
   aws_auth_users = [
     {
@@ -85,11 +83,17 @@ module "eks_auth" {
     }
   ]
 
-  aws_auth_node_iam_role_arns = module.eks.eks_managed_node_group_iam_role_arns
+  aws_auth_roles = [
+    for role_arn in module.eks.eks_managed_node_group_iam_role_arns : {
+      rolearn  = role_arn
+      username = "system:node:{{EC2PrivateDNSName}}"
+      groups   = ["system:bootstrappers", "system:nodes"]
+    }
+  ]
 }
 
 resource "aws_cloudwatch_log_group" "eks" {
-  depends_on = [module.eks]
+  depends_on        = [module.eks]
   name              = "/aws/eks/${var.name_prefix}-cluster/cluster"
   retention_in_days = 7
 
@@ -97,4 +101,8 @@ resource "aws_cloudwatch_log_group" "eks" {
     prevent_destroy = true
     ignore_changes  = all
   }
+}
+
+output "eks_node_role_arns" {
+  value = module.eks.eks_managed_node_group_iam_role_arns
 }
