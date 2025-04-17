@@ -68,7 +68,15 @@ module "eks" {
       key_arn = aws_kms_key.eks.arn
     }
   }
-  manage_aws_auth_configmap = true
+}
+
+module "eks_auth" {
+  source  = "terraform-aws-modules/eks/aws//modules/aws-auth"
+  version = "~> 20.31"
+
+  cluster_name = module.eks.cluster_name
+  create_aws_auth_configmap = true
+
   aws_auth_users = [
     {
       userarn  = "arn:aws:iam::878527066650:root"
@@ -76,6 +84,8 @@ module "eks" {
       groups   = ["system:masters"]
     }
   ]
+
+  aws_auth_node_iam_role_arns = module.eks.eks_managed_node_group_iam_role_arns
 }
 
 resource "aws_cloudwatch_log_group" "eks" {
